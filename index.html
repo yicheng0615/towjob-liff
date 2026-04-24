@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拖車工單</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    .header {
+      background: #0B7285;
+      color: white;
+      padding: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .summary {
+      margin-top: 6px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tab {
+      white-space: nowrap;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: #e9ecef;
+      font-size: 14px;
+    }
+
+    .tab.active {
+      background: #0B7285;
+      color: white;
+    }
+
+    .list {
+      padding: 12px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .main-line {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .sub-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .status {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .btn-accept { background: #2E7D32; }
+    .btn-reject { background: #C62828; }
+    .btn-depart { background: #455A64; }
+    .btn-arrive { background: #00695C; }
+
+    .empty, .loading {
+      text-align: center;
+      color: #777;
+      padding: 30px 10px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h2>拖車工單</h2>
+    <div class="summary" id="summary">讀取中...</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setFilter('')">全部</button>
+    <button class="tab" onclick="setFilter('PENDING')">未接單</button>
+    <button class="tab" onclick="setFilter('ACCEPTED')">已接單</button>
+    <button class="tab" onclick="setFilter('REJECTED')">已拒絕</button>
+    <button class="tab" onclick="setFilter('DEPARTED')">已出發</button>
+    <button class="tab" onclick="setFilter('ARRIVED')">已完成</button>
+  </div>
+
+  <div class="list" id="list">
+    <div class="loading">讀取工單中...</div>
+  </div>
+
+  <script>
+    // ⚠️ 之後改成你的外網 API
+    // 本機測試不能直接給 GitHub Pages 用
+    const API_BASE = "https://localhost:44309";
+
+    let currentStatus = "";
+
+    async function loadOrders() {
+      const list = document.getElementById("list");
+      const summary = document.getElementById("summary");
+
+      list.innerHTML = `<div class="loading">讀取工單中...</div>`;
+
+      try {
+        let url = `${API_BASE}/api/tow/orders`;
+
+        if (currentStatus) {
+          url += `?status=${encodeURIComponent(currentStatus)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.ok) {
+          list.innerHTML = `<div class="empty">讀取失敗</div>`;
+          summary.innerText = "讀取失敗";
+          return;
+        }
+
+        summary.innerText = `目前共 ${data.count} 筆`;
+
+        if (!data.items || data.items.length === 0) {
+          list.innerHTML = `<div class="empty">目前沒有工單</div>`;
+          return;
+        }
+
+        list.innerHTML = data.items.map(renderCard).join("");
+
+      } catch (err) {
+        console.error(err);
+        list.innerHTML = `<div class="empty">無法連線 API</div>`;
+        summary.innerText = "API 連線失敗";
+      }
+    }
+
+    function renderCard(o) {
+      const actions = renderActions(o);
+
+      return `
+        <div class="card" data-orderno="${escapeHtml(o.OrderNo)}">
+          <div class="main-line">
+            ${escapeHtml(o.VinDisplay)}｜${escapeHtml(o.Model || "-")}
+          </div>
+
+          <div class="sub-line">
+            <div>${escapeHtml(o.Route || "-")}</div>
+            <div class="status">${o.UiStatusIcon || ""} ${escapeHtml(o.UiStatusText)}</div>
+          </div>
+
+          ${actions}
+
+          <div class="small">單號隱藏：${escapeHtml(o.OrderNo)}</div>
+        </div>
+      `;
+    }
+
+    function renderActions(o) {
+      if (!o.AllowedActions || o.AllowedActions.length === 0) {
+        return "";
+      }
+
+      const buttons = o.AllowedActions.map(action => {
+        const text = getActionText(action);
+        const cls = getActionClass(action);
+
+        return `
+          <button class="btn ${cls}" onclick="doAction('${o.OrderNo}', '${action}')">
+            ${text}
+          </button>
+        `;
+      }).join("");
+
+      return `<div class="actions">${buttons}</div>`;
+    }
+
+    function getActionText(action) {
+      switch (action) {
+        case "accept": return "接單";
+        case "reject": return "拒絕";
+        case "depart": return "出發";
+        case "arrive": return "抵達";
+        default: return action;
+      }
+    }
+
+    function getActionClass(action) {
+      switch (action) {
+        case "accept": return "btn-accept";
+        case "reject": return "btn-reject";
+        case "depart": return "btn-depart";
+        case "arrive": return "btn-arrive";
+        default: return "";
+      }
+    }
+
+    async function doAction(orderNo, action) {
+      const actionText = getActionText(action);
+
+      if (!confirm(`確認要「${actionText}」嗎？`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/tow/${action}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            OrderNo: orderNo
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.Ok || result.ok) {
+          alert(`${actionText}成功`);
+          await loadOrders();
+        } else {
+          alert(result.Message || result.message || "操作失敗");
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("API 連線失敗");
+      }
+    }
+
+    function setFilter(status) {
+      currentStatus = status;
+
+      document.querySelectorAll(".tab").forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      event.target.classList.add("active");
+
+      loadOrders();
+    }
+
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return "";
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
