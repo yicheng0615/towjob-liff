@@ -10,13 +10,13 @@
       margin: 0;
       font-family: Arial, "Microsoft JhengHei", sans-serif;
       background: #f5f6f8;
-      color: #222;
+      color: #111;
     }
 
     .header {
       background: #0B7285;
       color: white;
-      padding: 16px;
+      padding: 18px 16px;
       position: sticky;
       top: 0;
       z-index: 10;
@@ -24,13 +24,13 @@
 
     .header h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
     }
 
     .summary {
       margin-top: 6px;
       font-size: 14px;
-      opacity: 0.9;
+      opacity: 0.95;
     }
 
     .tabs {
@@ -45,10 +45,11 @@
     .tab {
       white-space: nowrap;
       border: none;
-      padding: 8px 12px;
+      padding: 8px 13px;
       border-radius: 20px;
       background: #e9ecef;
       font-size: 14px;
+      font-weight: bold;
     }
 
     .tab.active {
@@ -60,35 +61,118 @@
       padding: 12px;
     }
 
-    .card {
+    .group-card {
       background: white;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .main-line {
+    .date-line {
+      font-size: 14px;
+      color: #666;
       font-weight: bold;
-      font-size: 16px;
       margin-bottom: 8px;
     }
 
-    .sub-line {
+    .route-line {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #111;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .route-arrow {
+      color: #0B7285;
+      font-weight: bold;
+    }
+
+    .group-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      margin-bottom: 10px;
       font-size: 14px;
-      color: #444;
     }
 
-    .status {
+    .status-pill {
       font-weight: bold;
+      font-size: 13px;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #f1f3f5;
       white-space: nowrap;
     }
 
+    .vehicle-list {
+      border-top: 1px solid #eee;
+      margin-top: 8px;
+      padding-top: 6px;
+    }
+
+    .vehicle-row {
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .vehicle-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .vehicle-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 10px;
+    }
+
+    .toggle {
+      font-size: 14px;
+      color: #0B7285;
+      flex-shrink: 0;
+    }
+
+    .detail {
+      display: none;
+      margin-top: 10px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .detail.show {
+      display: block;
+    }
+
+    .detail-row {
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .detail-label {
+      color: #777;
+      margin-right: 4px;
+    }
+
     .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .detail-actions {
       display: flex;
       gap: 8px;
       margin-top: 10px;
@@ -97,11 +181,17 @@
     .btn {
       flex: 1;
       border: none;
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 13px;
       color: white;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .btn-small {
+      padding: 10px;
+      font-size: 14px;
     }
 
     .btn-accept { background: #2E7D32; }
@@ -112,13 +202,13 @@
     .empty, .loading {
       text-align: center;
       color: #777;
-      padding: 30px 10px;
+      padding: 40px 10px;
     }
 
-    .small {
+    .hint {
       font-size: 12px;
       color: #888;
-      margin-top: 6px;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -130,12 +220,12 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="setFilter('')">全部</button>
-    <button class="tab" onclick="setFilter('PENDING')">未接單</button>
-    <button class="tab" onclick="setFilter('ACCEPTED')">已接單</button>
-    <button class="tab" onclick="setFilter('REJECTED')">已拒絕</button>
-    <button class="tab" onclick="setFilter('DEPARTED')">已出發</button>
-    <button class="tab" onclick="setFilter('ARRIVED')">已完成</button>
+    <button class="tab active" onclick="setFilter('', this)">全部</button>
+    <button class="tab" onclick="setFilter('PENDING', this)">未接單</button>
+    <button class="tab" onclick="setFilter('ACCEPTED', this)">已接單</button>
+    <button class="tab" onclick="setFilter('REJECTED', this)">已拒絕</button>
+    <button class="tab" onclick="setFilter('DEPARTED', this)">已出發</button>
+    <button class="tab" onclick="setFilter('ARRIVED', this)">已完成</button>
   </div>
 
   <div class="list" id="list">
@@ -143,11 +233,18 @@
   </div>
 
   <script>
-    // ⚠️ 之後改成你的外網 API
-    // 本機測試不能直接給 GitHub Pages 用
-    const API_BASE = " https://unrationalised-aimee-girderless.ngrok-free.dev";
+    // 改成你的 ngrok 或正式 API
+    const API_BASE = "https://unrationalised-aimee-girderless.ngrok-free.dev";
 
     let currentStatus = "";
+
+    const statusOrder = {
+      "PENDING": 1,
+      "ACCEPTED": 2,
+      "DEPARTED": 3,
+      "REJECTED": 4,
+      "ARRIVED": 5
+    };
 
     async function loadOrders() {
       const list = document.getElementById("list");
@@ -157,7 +254,6 @@
 
       try {
         let url = `${API_BASE}/api/tow/orders`;
-
         if (currentStatus) {
           url += `?status=${encodeURIComponent(currentStatus)}`;
         }
@@ -165,66 +261,251 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        if (!data.ok) {
+        if (!data.ok && !data.Ok) {
           list.innerHTML = `<div class="empty">讀取失敗</div>`;
           summary.innerText = "讀取失敗";
           return;
         }
 
-        summary.innerText = `目前共 ${data.count} 筆`;
+        const items = data.items || data.Items || [];
+        summary.innerText = `目前共 ${items.length} 筆`;
 
-        if (!data.items || data.items.length === 0) {
+        if (items.length === 0) {
           list.innerHTML = `<div class="empty">目前沒有工單</div>`;
           return;
         }
 
-        list.innerHTML = data.items.map(renderCard).join("");
+        const sorted = sortItems(items);
+        const groups = groupOrders(sorted);
+
+        list.innerHTML = groups.map(renderGroup).join("");
 
       } catch (err) {
         console.error(err);
-        list.innerHTML = `<div class="empty">無法連線 API</div>`;
+        list.innerHTML = `<div class="empty">API 連線失敗</div>`;
         summary.innerText = "API 連線失敗";
       }
     }
 
-    function renderCard(o) {
-      const actions = renderActions(o);
+    function sortItems(items) {
+      return items.sort((a, b) => {
+        const da = normalizeDate(a.ScheduleTime || a.scheduleTime || a.排定時間 || "");
+        const db = normalizeDate(b.ScheduleTime || b.scheduleTime || b.排定時間 || "");
+
+        if (da !== db) return da.localeCompare(db);
+
+        const sa = statusOrder[a.UiStatus] || 99;
+        const sb = statusOrder[b.UiStatus] || 99;
+        if (sa !== sb) return sa - sb;
+
+        const ra = `${a.From || ""}-${a.To || ""}`;
+        const rb = `${b.From || ""}-${b.To || ""}`;
+        if (ra !== rb) return ra.localeCompare(rb);
+
+        return (a.VinDisplay || "").localeCompare(b.VinDisplay || "");
+      });
+    }
+
+    function groupOrders(items) {
+      const map = {};
+
+      items.forEach(o => {
+        const schedule = getSchedule(o);
+        const from = o.From || "";
+        const to = o.To || "";
+        const status = o.UiStatus || "PENDING";
+
+        const key = `${schedule}__${from}__${to}__${status}`;
+
+        if (!map[key]) {
+          map[key] = {
+            schedule,
+            from,
+            to,
+            status,
+            statusText: o.UiStatusText,
+            statusIcon: o.UiStatusIcon,
+            allowedActions: o.AllowedActions || [],
+            items: []
+          };
+        }
+
+        map[key].items.push(o);
+      });
+
+      return Object.values(map);
+    }
+
+    function renderGroup(g) {
+      const groupActions = renderGroupActions(g);
 
       return `
-        <div class="card" data-orderno="${escapeHtml(o.OrderNo)}">
-          <div class="main-line">
-            ${escapeHtml(o.VinDisplay)}｜${escapeHtml(o.Model || "-")}
+        <div class="group-card">
+          <div class="date-line">預定抵達：${escapeHtml(g.schedule || "未排定")}</div>
+
+          <div class="route-line">
+            <span>${escapeHtml(g.from || "-")}</span>
+            <span class="route-arrow">→</span>
+            <span>${escapeHtml(g.to || "-")}</span>
           </div>
 
-          <div class="sub-line">
-            <div>${escapeHtml(o.Route || "-")}</div>
-            <div class="status">${o.UiStatusIcon || ""} ${escapeHtml(o.UiStatusText)}</div>
+          <div class="group-meta">
+            <div>共 ${g.items.length} 台</div>
+            <div class="status-pill">${g.statusIcon || ""} ${escapeHtml(g.statusText || "")}</div>
           </div>
 
-          ${actions}
+          <div class="vehicle-list">
+            ${g.items.map(renderVehicle).join("")}
+          </div>
 
-          <div class="small">單號隱藏：${escapeHtml(o.OrderNo)}</div>
+          ${groupActions}
         </div>
       `;
     }
 
-    function renderActions(o) {
-      if (!o.AllowedActions || o.AllowedActions.length === 0) {
-        return "";
-      }
+    function renderVehicle(o) {
+      const orderNo = o.OrderNo || "";
+      const detailId = `detail_${orderNo}`;
+      const singleActions = renderSingleActions(o);
 
-      const buttons = o.AllowedActions.map(action => {
-        const text = getActionText(action);
-        const cls = getActionClass(action);
+      return `
+        <div class="vehicle-row">
+          <div class="vehicle-head" onclick="toggleDetail('${detailId}', this)">
+            <div class="vehicle-title">
+              ${escapeHtml(o.VinDisplay || o.Vin || "")}｜${escapeHtml(o.Model || "-")}
+            </div>
+            <div class="toggle">▼</div>
+          </div>
 
+          <div class="detail" id="${detailId}">
+            <div class="detail-row"><span class="detail-label">拖車單號：</span>${escapeHtml(orderNo)}</div>
+            <div class="detail-row"><span class="detail-label">VIN：</span>${escapeHtml(o.Vin || "")}</div>
+            <div class="detail-row"><span class="detail-label">車型：</span>${escapeHtml(o.Model || "")}</div>
+            <div class="detail-row"><span class="detail-label">拖車類型：</span>${escapeHtml(o.TowType || "")}</div>
+            <div class="detail-row"><span class="detail-label">備註：</span>${escapeHtml(o.Remark || "無")}</div>
+            <div class="detail-row"><span class="detail-label">目前狀態：</span>${o.UiStatusIcon || ""} ${escapeHtml(o.UiStatusText || "")}</div>
+
+            ${singleActions}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGroupActions(g) {
+      if (!g.allowedActions || g.allowedActions.length === 0) return "";
+
+      const buttons = g.allowedActions.map(action => {
         return `
-          <button class="btn ${cls}" onclick="doAction('${o.OrderNo}', '${action}')">
-            ${text}
+          <button class="btn ${getActionClass(action)}" onclick="doGroupAction('${action}', '${getOrderNos(g.items)}')">
+            全部${getActionText(action)}
           </button>
         `;
       }).join("");
 
       return `<div class="actions">${buttons}</div>`;
+    }
+
+    function renderSingleActions(o) {
+      const actions = o.AllowedActions || [];
+      if (actions.length === 0) return "";
+
+      const buttons = actions.map(action => {
+        return `
+          <button class="btn btn-small ${getActionClass(action)}" onclick="event.stopPropagation(); doAction('${o.OrderNo}', '${action}')">
+            單台${getActionText(action)}
+          </button>
+        `;
+      }).join("");
+
+      return `<div class="detail-actions">${buttons}</div>`;
+    }
+
+    function getOrderNos(items) {
+      return items.map(x => x.OrderNo).join(",");
+    }
+
+    async function doGroupAction(action, orderNosText) {
+      const orderNos = orderNosText.split(",").filter(x => x);
+      const actionText = getActionText(action);
+
+      if (!confirm(`確認要「全部${actionText}」嗎？共 ${orderNos.length} 台`)) {
+        return;
+      }
+
+      for (const orderNo of orderNos) {
+        await callActionApi(orderNo, action);
+      }
+
+      alert(`全部${actionText}完成`);
+      await loadOrders();
+    }
+
+    async function doAction(orderNo, action) {
+      const actionText = getActionText(action);
+
+      if (!confirm(`確認要「${actionText}」嗎？`)) {
+        return;
+      }
+
+      await callActionApi(orderNo, action);
+      alert(`${actionText}成功`);
+      await loadOrders();
+    }
+
+    async function callActionApi(orderNo, action) {
+      const res = await fetch(`${API_BASE}/api/tow/${action}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          OrderNo: orderNo
+        })
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !(result.Ok || result.ok)) {
+        throw new Error(result.Message || result.message || "操作失敗");
+      }
+
+      return result;
+    }
+
+    function toggleDetail(id, el) {
+      const detail = document.getElementById(id);
+      const toggle = el.querySelector(".toggle");
+
+      if (!detail) return;
+
+      const isShow = detail.classList.contains("show");
+      detail.classList.toggle("show", !isShow);
+      toggle.innerText = isShow ? "▼" : "▲";
+    }
+
+    function setFilter(status, btn) {
+      currentStatus = status;
+
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      btn.classList.add("active");
+
+      loadOrders();
+    }
+
+    function getSchedule(o) {
+      return (
+        o.ScheduleTime ||
+        o.scheduleTime ||
+        o.排定時間 ||
+        o.Schedule ||
+        o.schedule ||
+        "未排定"
+      );
+    }
+
+    function normalizeDate(value) {
+      if (!value) return "9999/99/99";
+      return String(value).replaceAll("-", "/").substring(0, 10);
     }
 
     function getActionText(action) {
@@ -245,51 +526,6 @@
         case "arrive": return "btn-arrive";
         default: return "";
       }
-    }
-
-    async function doAction(orderNo, action) {
-      const actionText = getActionText(action);
-
-      if (!confirm(`確認要「${actionText}」嗎？`)) {
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tow/${action}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            OrderNo: orderNo
-          })
-        });
-
-        const result = await res.json();
-
-        if (result.Ok || result.ok) {
-          alert(`${actionText}成功`);
-          await loadOrders();
-        } else {
-          alert(result.Message || result.message || "操作失敗");
-        }
-
-      } catch (err) {
-        console.error(err);
-        alert("API 連線失敗");
-      }
-    }
-
-    function setFilter(status) {
-      currentStatus = status;
-
-      document.querySelectorAll(".tab").forEach(btn => {
-        btn.classList.remove("active");
-      });
-
-      event.target.classList.add("active");
-
-      loadOrders();
     }
 
     function escapeHtml(value) {
