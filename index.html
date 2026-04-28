@@ -570,13 +570,32 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+    function startSignalR() {
+      try {
+        $.connection.hub.url = API_BASE + "/signalr";
+    
+        const towHub = $.connection.towHub;
+    
+        towHub.client.towOrdersUpdated = function () {
+          console.log("收到即時更新通知");
+          loadOrders();
+        };
+    
+        $.connection.hub.start()
+          .done(function () {
+            console.log("SignalR 已連線");
+          })
+          .fail(function (err) {
+            console.error("SignalR 連線失敗", err);
+          });
+    
+      } catch (err) {
+        console.error("SignalR 初始化失敗", err);
+      }
+    }
 
     loadOrders();
-    setInterval(() => {
-      if (!isOperating) {
-        loadOrders();
-      }
-    }, 10000);
+    startSignalR();
   </script>
 </body>
 </html>
