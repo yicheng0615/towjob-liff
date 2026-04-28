@@ -341,7 +341,7 @@
 
       return `
         <div class="group-card">
-          <div class="date-line">預定抵達日期：${escapeHtml(g.schedule || "未排定")}</div>
+          <div class="date-line">預定抵達日期：${escapeHtml(formatExcelDate(g.schedule))}</div>
 
           <div class="route-line">
             <span>${escapeHtml(g.from || "-")}</span>
@@ -383,7 +383,7 @@
             <div class="detail-row"><span class="detail-label">車輛類型：</span>${escapeHtml(o.VehicleType || "")}</div>
             <div class="detail-row"><span class="detail-label">車型：</span>${escapeHtml(o.Model || "")}</div>
             <div class="detail-row"><span class="detail-label">拖車類型：</span>${escapeHtml(o.TowType || "")}</div>
-            <div class="detail-row"><span class="detail-label">預定抵達日期：</span>${escapeHtml(o.ScheduleTime || "未排定")}</div>
+            <div class="detail-row"><span class="detail-label">預定抵達日期：</span>${escapeHtml(formatExcelDate(o.ScheduleTime))}</div>
             <div class="detail-row"><span class="detail-label">MMT派工人員：</span>${escapeHtml(o.AssignUser || "")}</div>
             <div class="detail-row"><span class="detail-label">備註：</span>${escapeHtml(o.Remark || "無")}</div>
             <div class="detail-row"><span class="detail-label">目前狀態：</span>${o.UiStatusIcon || ""} ${escapeHtml(o.UiStatusText || "")}</div>
@@ -531,6 +531,26 @@
       }
     }
 
+    function formatExcelDate(value) {
+      if (!value) return "未排定";
+    
+      const str = String(value).trim();
+    
+      // Excel 日期序號，例如 46141
+      if (/^\d+$/.test(str)) {
+        const serial = parseInt(str, 10);
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const date = new Date(excelEpoch.getTime() + serial * 86400000);
+    
+        const y = date.getUTCFullYear();
+        const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+        const d = String(date.getUTCDate()).padStart(2, "0");
+    
+        return `${y}/${m}/${d}`;
+      }
+    
+      return str.substring(0, 10).replaceAll("-", "/");
+    }
     function escapeHtml(value) {
       if (value === null || value === undefined) return "";
 
