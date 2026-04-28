@@ -237,7 +237,7 @@
     const API_BASE = "https://unrationalised-aimee-girderless.ngrok-free.dev";
 
     let currentStatus = "";
-
+    let isOperating = false;
     const statusOrder = {
       "PENDING": 1,
       "ACCEPTED": 2,
@@ -445,14 +445,23 @@
 
     async function doAction(orderNo, action) {
       const actionText = getActionText(action);
-
+    
       if (!confirm(`確認要「${actionText}」嗎？`)) {
         return;
       }
-
-      await callActionApi(orderNo, action);
-      alert(`${actionText}成功`);
-      await loadOrders();
+    
+      isOperating = true;
+    
+      try {
+        await callActionApi(orderNo, action);
+        alert(`${actionText}成功`);
+        await loadOrders();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "操作失敗");
+      } finally {
+        isOperating = false;
+      }
     }
 
     async function callActionApi(orderNo, action) {
@@ -563,6 +572,11 @@
     }
 
     loadOrders();
+    setInterval(() => {
+      if (!isOperating) {
+        loadOrders();
+      }
+    }, 10000);
   </script>
 </body>
 </html>
