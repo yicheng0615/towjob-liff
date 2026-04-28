@@ -372,7 +372,7 @@
         const da = normalizeDate(a.ScheduleTime || a.scheduleTime || a.排定時間 || "");
         const db = normalizeDate(b.ScheduleTime || b.scheduleTime || b.排定時間 || "");
 
-        if (da !== db) return db.localeCompare(da);
+        if (da !== db) return da.localeCompare(db);
 
         const sa = statusOrder[a.UiStatus] || 99;
         const sb = statusOrder[b.UiStatus] || 99;
