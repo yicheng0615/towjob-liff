@@ -418,13 +418,14 @@
 
     function renderGroup(g) {
       const groupActions = renderGroupActions(g);
+      const remain = getRemainingDays(g.schedule);
 
       return `
         <div class="group-card">
-          <div class="date-line">
-            <div style="font-size:12px; color:#888; font-weight:600;">預定抵達</div>
-            <div style="font-size:18px; font-weight:700; color:${getDateColor(g.schedule)};">
-              ${escapeHtml(formatExcelDate(g.schedule))}
+          <div class="date-block">
+            <div class="date-label">預定抵達</div>
+            <div class="date-value" style="color:${getDateColor(g.schedule)};">
+              ${escapeHtml(formatExcelDate(g.schedule))}${remain ? `（${remain}）` : ""}
             </div>
           </div>
 
@@ -652,6 +653,26 @@
       if (diffDays <= 1) return "#f59f00";  // 今天/明天
     
       return "#0B7285";                     // 正常
+    }
+    function getRemainingDays(value) {
+      if (!value) return "";
+    
+      const formatted = formatExcelDate(value);
+      if (!formatted || formatted === "未排定") return "";
+    
+      const target = new Date(formatted.replaceAll("/", "-"));
+      const today = new Date();
+    
+      today.setHours(0,0,0,0);
+      target.setHours(0,0,0,0);
+    
+      const diff = Math.round((target - today) / (1000 * 60 * 60 * 24));
+    
+      if (diff < 0) return "已過期";
+      if (diff === 0) return "今天";
+      if (diff === 1) return "明天";
+    
+      return `剩 ${diff} 天`;
     }
 
     function formatExcelDate(value) {
