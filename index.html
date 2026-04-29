@@ -283,7 +283,8 @@
   
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/signalr.js/2.4.3/jquery.signalR.min.js"></script>
-  <script src="https://unrationalised-aimee-girderless.ngrok-free.dev/signalr/hubs"></script>
+  <script src="https://towapi-mmt.ngrok.app/signalr/hubs"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <script>
     let confirmResolve = null;
@@ -315,6 +316,15 @@
     }
     // 改成你的 ngrok 或正式 API
     const API_BASE = "https://towapi-mmt.ngrok.app";
+    const LIFF_ID = "2009926599-m6j8eFpe";
+
+    const ALLOW_USER_IDS = [
+      "Udf63b92c56990b814a5ac93efaee369a",
+      "Uca024610aeb9183cbd87f45c4e75c423"
+    ];
+
+    let currentLineUserId = "";
+    let isAllowedUser = false;
 
     let currentStatus = "";
     let isOperating = false;
@@ -481,6 +491,9 @@
     }
 
     function renderGroupActions(g) {
+      if (!isAllowedUser) {
+        return `<div class="hint">僅授權人員可操作</div>`;
+      }
       if (!g.allowedActions || g.allowedActions.length === 0) return "";
 
       const buttons = g.allowedActions.map(action => {
@@ -495,6 +508,9 @@
     }
 
     function renderSingleActions(o) {
+      if (!isAllowedUser) {
+        return `<div class="hint">僅授權人員可操作</div>`;
+      }
       const actions = o.AllowedActions || [];
       if (actions.length === 0) return "";
 
@@ -566,8 +582,9 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          OrderNo: orderNo
+       body: JSON.stringify({
+          OrderNo: orderNo,
+          UserId: currentLineUserId
         })
       });
 
@@ -729,8 +746,29 @@
       }
     }
 
-    loadOrders();
-    startSignalR();
+    initPage();
+
+    async function initPage() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+    
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+    
+        const profile = await liff.getProfile();
+        currentLineUserId = profile.userId;
+        isAllowedUser = ALLOW_USER_IDS.includes(currentLineUserId);
+    
+      } catch (err) {
+        console.error("LIFF 初始化失敗", err);
+        isAllowedUser = false;
+      }
+    
+      await loadOrders();
+      startSignalR();
+    }
   </script>
 </body>
 </html>
