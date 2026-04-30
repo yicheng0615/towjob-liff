@@ -325,6 +325,7 @@
 
     let currentLineUserId = "";
     let isAllowedUser = false;
+    let cachedOrders = null;   // ✅ 新增
 
     let currentStatus = "";
     let isOperating = false;
@@ -337,6 +338,10 @@
     };
 
     async function loadOrders() {
+      if (cachedOrders) {
+        renderCached(cachedOrders);
+        return;
+      }
       const list = document.getElementById("list");
       const summary = document.getElementById("summary");
 
@@ -358,6 +363,7 @@
         }
 
         const items = data.items || data.Items || [];
+        cachedOrders = items;  // ✅ 新增
         summary.innerText = `目前共 ${items.length} 筆`;
 
         if (items.length === 0) {
@@ -751,7 +757,24 @@
         console.error("SignalR 初始化失敗", err);
       }
     }
-
+    
+    function renderCached(items) {
+      const list = document.getElementById("list");
+      const summary = document.getElementById("summary");
+    
+      summary.innerText = `目前共 ${items.length} 筆`;
+    
+      if (items.length === 0) {
+        list.innerHTML = `<div class="empty">目前沒有工單</div>`;
+        return;
+      }
+    
+      const sorted = sortItems(items);
+      const groups = groupOrders(sorted);
+    
+      list.innerHTML = groups.map(renderGroup).join("");
+    }
+    
     initPage();
 
     async function initPage() {
@@ -777,6 +800,7 @@
         return;
       }
       
+      cachedOrders = null;   // ✅ 新增
       await loadOrders();
       startSignalR();
           }
