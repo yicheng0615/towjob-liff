@@ -320,7 +320,8 @@
 
     const ALLOW_USER_IDS = [
       "Udf63b92c56990b814a5ac93efaee369a",
-      "Uca024610aeb9183cbd87f45c4e75c423"
+      "Uca024610aeb9183cbd87f45c4e75c423",
+      "Ue2f43a8b800ac3f75ce30a90fee0193f"
     ];
 
     let currentLineUserId = "";
@@ -551,6 +552,7 @@
         }
     
         showToast(`全部${actionText}完成`);
+        cachedOrders = null;   // ⭐ 新增
         await loadOrders();
     
       } catch (err) {
@@ -574,6 +576,7 @@
         await callActionApi(orderNo, action);
     
         showToast(`${actionText}成功`);
+        cachedOrders = null;   // ⭐ 新增
         await loadOrders();
     
       } catch (err) {
@@ -742,6 +745,7 @@
     
         towHub.client.towOrdersUpdated = function () {
           console.log("收到即時更新通知");
+          cachedOrders = null;   // ⭐ 新增
           loadOrders();
         };
     
@@ -800,7 +804,6 @@
         return;
       }
       
-      cachedOrders = null;   // ✅ 新增
       await loadOrders();
       startSignalR();
           }
