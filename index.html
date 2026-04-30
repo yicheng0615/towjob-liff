@@ -398,7 +398,6 @@
         if (!data.ok && !data.Ok) return;
     
         const items = data.items || data.Items || [];
-        cachedOrders = items;
         if (JSON.stringify(items) !== JSON.stringify(cachedOrders)) {
           cachedOrders = items;
           renderCached(items);
