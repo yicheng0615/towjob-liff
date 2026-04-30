@@ -399,7 +399,10 @@
     
         const items = data.items || data.Items || [];
         cachedOrders = items;
-        renderCached(items);
+        if (JSON.stringify(items) !== JSON.stringify(cachedOrders)) {
+          cachedOrders = items;
+          renderCached(items);
+        }
     
       } catch (err) {
         console.warn("背景更新失敗", err);
