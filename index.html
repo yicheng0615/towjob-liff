@@ -530,6 +530,7 @@
     }
 
     async function doGroupAction(action, orderNosText) {
+      if (isOperating) return;
       const orderNos = orderNosText.split(",").filter(x => x);
       const actionText = getActionText(action);
     
@@ -555,6 +556,7 @@
       }
     }
     async function doAction(orderNo, action) {
+      if (isOperating) return;
       const actionText = getActionText(action);
     
       const ok = await showConfirm(`確認要「${actionText}」嗎？`);
@@ -577,6 +579,10 @@
       }
     }
     async function callActionApi(orderNo, action) {
+      if (!isAllowedUser) {
+        showToast("沒有操作權限", true);
+        return;
+      }
       const res = await fetch(`${API_BASE}/api/tow/${action}`, {
         method: "POST",
         headers: {
@@ -766,9 +772,14 @@
         isAllowedUser = false;
       }
     
+      if (!currentLineUserId) {
+        document.getElementById("list").innerHTML = `<div class="empty">請從 LINE 開啟此系統</div>`;
+        return;
+      }
+      
       await loadOrders();
       startSignalR();
-    }
+          }
   </script>
 </body>
 </html>
